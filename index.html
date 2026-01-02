@@ -97,6 +97,8 @@
       <p id="professionNumber"></p>
       <h3>Meslekler:</h3>
       <ul id="professionList"></ul>
+      <h3>Açıklama:</h3>
+      <p id="explanationText"></p>
       <button id="downloadPDF">PDF Olarak İndir</button>
     </div>
   </div>
@@ -116,8 +118,9 @@
         .then(data => {
           const totalSum = calculateNumerology(firstName + lastName + maidenName);
 
-          // JSON'dan meslekler
+          // Meslek ve açıklamalar
           const professionList = data[totalSum] ? data[totalSum].meslekler : [];
+          const explanation = data[totalSum] ? data[totalSum].aciklama : '';
 
           // Sayıyı ekrana yazdırma
           document.getElementById('professionNumber').textContent = totalSum;
@@ -131,6 +134,9 @@
             professionListElement.appendChild(listItem);
           });
 
+          // Açıklama ekleme
+          document.getElementById('explanationText').textContent = explanation;
+
           // PDF İndirme Butonunu Görünür Hale Getir
           document.getElementById('result').style.display = 'block';
 
@@ -140,14 +146,23 @@
             const doc = new jsPDF();
             doc.setFont("helvetica");  // Türkçe karakterler için uyumlu font
 
-            doc.text("Numerolojik Meslek Sayısı: " + totalSum, 20, 20);
-            let yPosition = 30;
+            // Başlık
+            doc.text("Numerolojiye Göre Demet Bozat İçin Uygun Meslekler", 20, 20);
+            doc.text("Meslek Sayısı: " + totalSum, 20, 30);
 
+            let yPosition = 40;
+            
             // Meslekleri PDF'ye ekle
             professionList.forEach(profession => {
               doc.text(profession, 20, yPosition);
               yPosition += 10;
             });
+
+            // Açıklama ekle
+            yPosition += 10;
+            doc.text("Açıklama:", 20, yPosition);
+            yPosition += 10;
+            doc.text(explanation, 20, yPosition);
 
             doc.save('meslek_sayisi.pdf');
           });
@@ -156,7 +171,16 @@
     });
 
     function calculateNumerology(name) {
-      // Basit numeroloji hesaplama
+      // Türkçe harfleri İngilizce'ye çevirme
+      const turkishToEnglish = {
+        'ç': 'c', 'ı': 'i', 'ğ': 'g', 'ş': 's', 'ö': 'o', 'ü': 'u',
+        'Ç': 'C', 'İ': 'I', 'Ğ': 'G', 'Ş': 'S', 'Ö': 'O', 'Ü': 'U',
+        'ı': 'i' // 'ı' harfini 'i' olarak dönüştür
+      };
+
+      // Türkçe karakterleri İngilizce'ye dönüştür
+      name = name.replace(/[çığşöüÇİĞŞÖÜı]/g, match => turkishToEnglish[match]);
+
       const alphabet = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, I: 9, J: 1, K: 2, L: 3, M: 4, N: 5, O: 6, P: 7, Q: 8, R: 9, S: 1, T: 2, U: 3, V: 4, W: 5, X: 6, Y: 7, Z: 8 };
       let sum = 0;
 
