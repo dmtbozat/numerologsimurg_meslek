@@ -1,273 +1,176 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Numeroloji Meslek Hesaplama</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Numeroloji Hesaplayıcı</title>
   <style>
-    body {
+    body{
       font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      background:#f5f5f5;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      margin:0;
+      padding:16px;
     }
-
-    .container {
-      width: 80%;
-      max-width: 800px;
-      background-color: white;
-      padding: 30px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
+    .container{
+      background:#fff;
+      padding:24px 28px;
+      border-radius:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
+      max-width:760px;
+      width:100%;
     }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: #333;
+    h1{
+      font-size:22px;
+      margin:0 0 16px;
+      text-align:center;
     }
-
-    label {
-      display: block;
-      margin: 8px 0;
-      font-weight: bold;
+    label{
+      font-weight:600;
+      display:block;
+      margin-top:12px;
+      margin-bottom:6px;
     }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 16px;
+    input[type="text"]{
+      width:100%;
+      padding:10px 12px;
+      font-size:14px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
     }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #1e88e5;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
+    button{
+      width:100%;
+      padding:10px 12px;
+      font-size:15px;
+      font-weight:600;
+      border-radius:6px;
+      border:none;
+      cursor:pointer;
+      margin-top:12px;
     }
-
-    button:hover {
-      background-color: #1565c0;
+    #calcBtn{
+      background:#1e88e5;
+      color:#fff;
     }
-
-    #result {
-      margin-top: 30px;
-      display: none;
-      background-color: #f0f4ff;
-      padding: 20px;
-      border-radius: 8px;
+    #resetBtn{
+      background:#b0b0b0;
+      color:#000;
     }
-
-    .result-title {
-      font-size: 18px;
-      font-weight: bold;
+    .resultBox{
+      background:#f0f4ff;
+      padding:14px;
+      border-radius:6px;
+      margin-top:14px;
     }
-
-    .result-text {
-      font-size: 16px;
-      margin-top: 10px;
+    .resultTitle{
+      font-weight:bold;
+      font-size:15px;
+      margin-bottom:6px;
     }
-
-    #downloadPDF {
-      background-color: #4caf50;
-      color: white;
-      margin-top: 20px;
-    }
-
-    #downloadPDF:hover {
-      background-color: #388e3c;
-    }
-
-    .statusLine {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    .statusOk {
-      color: #2e7d32;
-    }
-
-    .statusBad {
-      color: #c62828;
-    }
-
-    #resetBtn {
-      background-color: #f44336;
-      color: white;
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #resetBtn:hover {
-      background-color: #d32f2f;
+    .resultValue{
+      font-size:16px;
+      color:#1a237e;
+      font-weight:700;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Numerolojiye Göre Meslek Hesaplama</h1>
-    <form id="numerologyForm">
-      <label for="firstName">İsim:</label>
-      <input type="text" id="firstName" name="firstName" required>
+    <h1>Numeroloji Hesaplayıcı</h1>
+    <label for="isim">İsim</label>
+    <input type="text" id="isim" placeholder="İsim girin" />
+    <label for="kizlik">Kızlık Soyadı (opsiyonel)</label>
+    <input type="text" id="kizlik" placeholder="Kızlık soyadı girin (isteğe bağlı)" />
+    <label for="soyad">Soyadı</label>
+    <input type="text" id="soyad" placeholder="Soyadı girin" />
+    <button id="calcBtn">Hesapla</button>
+    <button id="resetBtn">Resetle</button>
 
-      <label for="lastName">Soyisim:</label>
-      <input type="text" id="lastName" name="lastName" required>
-
-      <label for="maidenName">Kızlık Soyadı (isteğe bağlı):</label>
-      <input type="text" id="maidenName" name="maidenName">
-
-      <button type="submit">Hesapla</button>
-      <button type="button" id="resetBtn">Resetle</button>
-    </form>
-
-    <div id="result">
-      <div class="result-title">Numerolojik Meslek Sayısı:</div>
-      <div class="result-text" id="professionNumber"></div>
-
-      <div class="result-title">Meslekler:</div>
-      <ul id="professionList"></ul>
-
-      <div class="result-title">Açıklama:</div>
-      <div class="result-text" id="explanationText"></div>
-
-      <button id="downloadPDF">PDF Olarak İndir</button>
-    </div>
-
-    <div class="statusLine" id="jsonStatus">
-      JSON durumu: <span class="statusBad">yükleniyor...</span>
+    <div class="resultBox">
+      <div class="resultTitle">Uygun Meslekler</div>
+      <div class="resultValue" id="mesleklerList"></div>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    /***********************
-     * Türkçe Karakterleri Dönüştürme
-     ***********************/
-    function trToAscii(str) {
-      if (!str) return "";
-      const map = {
-        "ç": "c", "Ç": "C", "ğ": "g", "Ğ": "G", "ş": "s", "Ş": "S", 
-        "ö": "o", "Ö": "O", "ü": "u", "Ü": "U", "ı": "i", "İ": "I"
-      };
-      return str.replace(/[çÇğĞşŞöÖüÜıİ]/g, ch => map[ch] || ch);
-    }
+    // Meslekler verisi (JSON'dan gelecek)
+    const meslekVerisi = {
+      "1": {
+        "meslekler": ["CEO", "lider", "yönetici", "gazete dergi sahibi", "yazar"],
+        "aciklama": "Bu sayı, liderlik yeteneklerine sahip kişileri ifade eder."
+      },
+      "2": {
+        "meslekler": ["Diplomat", "psikolog", "öğretmen"],
+        "aciklama": "Bu sayı, başkalarıyla uyum içinde çalışabilen, empatik kişileri tanımlar."
+      },
+      "3": {
+        "meslekler": ["Şovmen", "yazar", "şarkıcı", "müzik sanatçısı"],
+        "aciklama": "Bu sayı, yaratıcı ve iletişim gücü yüksek kişileri tanımlar."
+      },
+      // Diğer sayılar için meslekler...
+    };
 
-    /***********************
-     * Meslek Hesaplama Fonksiyonu
-     ***********************/
-    document.getElementById('numerologyForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+    // Harf ve sayılara karşılık gelen map
+    const harfMap = {
+      "A": 1, "B": 2, "C": 3, "Ç": 3, "D": 4, "E": 5, "F": 6, "G": 7, "Ğ": 7, "H": 8, "I": 9, "İ": 9, 
+      "J": 1, "K": 2, "L": 3, "M": 4, "N": 5, "O": 6, "Ö": 6, "P": 7, "R": 9, "S": 1, "Ş": 1, "T": 2, 
+      "U": 3, "Ü": 3, "V": 4, "Y": 7, "Z": 8
+    };
+
+    // Numeroloji sayısı hesaplama
+    function hesaplaNumeroloji(isim, kizlik, soyad) {
+      const fullName = (isim + (kizlik || "") + soyad).toUpperCase();
+      let toplam = 0;
       
-      const firstName = document.getElementById('firstName').value;
-      const lastName = document.getElementById('lastName').value;
-      const maidenName = document.getElementById('maidenName').value;
-
-      fetch('uygun_meslekler.json') // JSON dosyanızın yolu burada
-        .then(response => response.json())
-        .then(data => {
-          const totalSum = calculateNumerology(firstName + lastName + maidenName);
-
-          // Meslekler ve açıklama
-          const professionList = data[totalSum] ? data[totalSum].meslekler : [];
-          const explanation = data[totalSum] ? data[totalSum].aciklama : '';
-
-          // Sayıyı ekrana yazdırma
-          document.getElementById('professionNumber').textContent = totalSum;
-
-          // Meslekleri listeleme
-          const professionListElement = document.getElementById('professionList');
-          professionListElement.innerHTML = '';
-          professionList.forEach(profession => {
-            const listItem = document.createElement('li');
-            listItem.textContent = profession;
-            professionListElement.appendChild(listItem);
-          });
-
-          // Açıklama ekleme
-          document.getElementById('explanationText').textContent = explanation;
-
-          // PDF İndirme Butonunu Görünür Hale Getir
-          document.getElementById('result').style.display = 'block';
-
-          // PDF indirme fonksiyonu
-          document.getElementById('downloadPDF').addEventListener('click', function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFont("helvetica");
-
-            // Başlık
-            doc.text("Numerolojiye Göre Meslek Hesaplama", 20, 20);
-            doc.text("Meslek Sayısı: " + totalSum, 20, 30);
-
-            let yPosition = 40;
-            
-            // Meslekleri PDF'ye ekle
-            professionList.forEach(profession => {
-              doc.text(profession, 20, yPosition);
-              yPosition += 10;
-            });
-
-            // Açıklama ekle
-            yPosition += 10;
-            doc.text("Açıklama:", 20, yPosition);
-            yPosition += 10;
-            doc.text(explanation, 20, yPosition);
-
-            doc.save('meslek_sayisi.pdf');
-          });
-        })
-        .catch(error => console.error('JSON dosyası yüklenemedi:', error));
-    });
-
-    function calculateNumerology(name) {
-      const turkishToEnglish = {
-        'ç': 'c', 'ı': 'i', 'ğ': 'g', 'ş': 's', 'ö': 'o', 'ü': 'u',
-        'Ç': 'C', 'İ': 'I', 'Ğ': 'G', 'Ş': 'S', 'Ö': 'O', 'Ü': 'U',
-        'ı': 'i'
-      };
-
-      name = name.replace(/[çığşöüÇİĞŞÖÜı]/g, match => turkishToEnglish[match]);
-
-      const alphabet = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, I: 9, J: 1, K: 2, L: 3, M: 4, N: 5, O: 6, P: 7, Q: 8, R: 9, S: 1, T: 2, U: 3, V: 4, W: 5, X: 6, Y: 7, Z: 8 };
-      let sum = 0;
-
-      for (let i = 0; i < name.length; i++) {
-        const letter = name[i].toUpperCase();
-        if (alphabet[letter]) {
-          sum += alphabet[letter];
+      for (let i = 0; i < fullName.length; i++) {
+        const harf = fullName[i];
+        if (harfMap[harf]) {
+          toplam += harfMap[harf];
         }
       }
 
-      // Sayıyı 9'a indirgemek
-      while (sum > 9) {
-        sum = sum.toString().split('').reduce((acc, curr) => acc + parseInt(curr), 0);
+      // Numeroloji sayısını tek haneli sayıya indirme
+      while (toplam > 9) {
+        toplam = toplam.toString().split('').reduce((acc, num) => acc + Number(num), 0);
       }
-
-      return sum;
+      return toplam;
     }
 
-    // Reset Butonu İşlevi
-    document.getElementById('resetBtn').addEventListener('click', function() {
-      document.getElementById('firstName').value = '';
-      document.getElementById('lastName').value = '';
-      document.getElementById('maidenName').value = '';
-      document.getElementById('result').style.display = 'none';
+    // Hesaplama ve sonucu gösterme
+    document.getElementById("calcBtn").addEventListener("click", function() {
+      const isim = document.getElementById("isim").value.trim();
+      const kizlik = document.getElementById("kizlik").value.trim();
+      const soyad = document.getElementById("soyad").value.trim();
+
+      if (!isim || (!soyad && !kizlik)) {
+        alert("Lütfen isim ve soyad girin.");
+        return;
+      }
+
+      const numerolojiSayisi = hesaplaNumeroloji(isim, kizlik, soyad);
+      const meslekler = meslekVerisi[numerolojiSayisi];
+
+      if (meslekler) {
+        document.getElementById("mesleklerList").innerHTML = `
+          <p><strong>Numeroloji Sayısı: ${numerolojiSayisi}</strong></p>
+          <p><strong>Meslekler:</strong> ${meslekler.meslekler.join(", ")}</p>
+          <p><strong>Açıklama:</strong> ${meslekler.aciklama}</p>
+        `;
+      } else {
+        document.getElementById("mesleklerList").innerHTML = "Bu sayıya ait meslek bulunamadı.";
+      }
+    });
+
+    // Resetleme fonksiyonu
+    document.getElementById("resetBtn").addEventListener("click", function() {
+      document.getElementById("isim").value = "";
+      document.getElementById("kizlik").value = "";
+      document.getElementById("soyad").value = "";
+      document.getElementById("mesleklerList").innerHTML = "";
     });
   </script>
 </body>
