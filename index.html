@@ -95,6 +95,8 @@
     <div id="result">
       <h2>Numerolojik Meslek Sayısı:</h2>
       <p id="professionNumber"></p>
+      <h3>Meslekler:</h3>
+      <ul id="professionList"></ul>
       <button id="downloadPDF">PDF Olarak İndir</button>
     </div>
   </div>
@@ -114,8 +116,20 @@
         .then(data => {
           const totalSum = calculateNumerology(firstName + lastName + maidenName);
 
-          // Meslek sayısını ekranda göstereceğiz
+          // JSON'dan meslekler
+          const professionList = data[totalSum] ? data[totalSum].meslekler : [];
+
+          // Sayıyı ekrana yazdırma
           document.getElementById('professionNumber').textContent = totalSum;
+
+          // Meslekleri listeleme
+          const professionListElement = document.getElementById('professionList');
+          professionListElement.innerHTML = '';
+          professionList.forEach(profession => {
+            const listItem = document.createElement('li');
+            listItem.textContent = profession;
+            professionListElement.appendChild(listItem);
+          });
 
           // PDF İndirme Butonunu Görünür Hale Getir
           document.getElementById('result').style.display = 'block';
@@ -124,8 +138,17 @@
           document.getElementById('downloadPDF').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            doc.setFont("helvetica");  // Türkçe karakterler için uyumlu font
 
             doc.text("Numerolojik Meslek Sayısı: " + totalSum, 20, 20);
+            let yPosition = 30;
+
+            // Meslekleri PDF'ye ekle
+            professionList.forEach(profession => {
+              doc.text(profession, 20, yPosition);
+              yPosition += 10;
+            });
+
             doc.save('meslek_sayisi.pdf');
           });
         })
