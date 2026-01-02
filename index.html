@@ -104,6 +104,19 @@
       color: #c62828;
     }
 
+    #resetBtn {
+      background-color: #f44336;
+      color: white;
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #resetBtn:hover {
+      background-color: #d32f2f;
+    }
   </style>
 </head>
 <body>
@@ -120,6 +133,7 @@
       <input type="text" id="maidenName" name="maidenName">
 
       <button type="submit">Hesapla</button>
+      <button type="button" id="resetBtn">Resetle</button>
     </form>
 
     <div id="result">
@@ -143,52 +157,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     /***********************
-     * METİN TEMİZLEME
+     * Türkçe Karakterleri Dönüştürme
      ***********************/
-    function fixSpacedLetters(str) {
-      str = (str || "").trim();
-      const tokens = str.split(/\s+/);
-      if (tokens.length >= 8) {
-        const singleCharCount = tokens.filter(t => t.length === 1).length;
-        if (singleCharCount / tokens.length > 0.7) {
-          return tokens.join("");
-        }
-      }
-      return str;
-    }
-
     function trToAscii(str) {
       if (!str) return "";
       const map = {
-        "ç":"c", "Ç":"C", "ğ":"g", "Ğ":"G", "ş":"s", "Ş":"S", 
-        "ö":"o", "Ö":"O", "ü":"u", "Ü":"U", "ı":"i", "İ":"I"
+        "ç": "c", "Ç": "C", "ğ": "g", "Ğ": "G", "ş": "s", "Ş": "S", 
+        "ö": "o", "Ö": "O", "ü": "u", "Ü": "U", "ı": "i", "İ": "I"
       };
       return str.replace(/[çÇğĞşŞöÖüÜıİ]/g, ch => map[ch] || ch);
     }
 
-    function cleanPdfText(str) {
-      return trToAscii(str || "")
-        .replace(/[\u200B-\u200D\uFEFF]/g, "")
-        .replace(/[–—−]/g, "-")
-        .replace(/→/g, "->")
-        .replace(/[“”]/g, '"')
-        .replace(/[’‘]/g, "'")
-        .replace(/\r/g, "");
-    }
-
     /***********************
-     * HARF - SAYI MAP
-     ***********************/
-    const numberMap = {
-      A:1, B:2, C:3, Ç:3, D:4, E:5, F:6, G:7, Ğ:7, H:8, I:9, İ:9, J:1,
-      K:2, L:3, M:4, N:5, O:6, Ö:6, P:7, R:9, S:1, Ş:1, T:2, U:3, Ü:3,
-      V:4, Y:7, Z:8, W:5, Q:8, X:6 
-    };
-
-    const vowels = "AEIİOÖUÜ";
-
-    /***********************
-     * NUMEROLOJİK HESAPLAMA
+     * Meslek Hesaplama Fonksiyonu
      ***********************/
     document.getElementById('numerologyForm').addEventListener('submit', function(event) {
       event.preventDefault();
@@ -279,6 +260,14 @@
 
       return sum;
     }
+
+    // Reset Butonu İşlevi
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      document.getElementById('firstName').value = '';
+      document.getElementById('lastName').value = '';
+      document.getElementById('maidenName').value = '';
+      document.getElementById('result').style.display = 'none';
+    });
   </script>
 </body>
 </html>
