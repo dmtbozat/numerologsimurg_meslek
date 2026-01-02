@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Numeroloji Meslek Hesaplama</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 50%;
+      margin: 50px auto;
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #result {
+      margin-top: 20px;
+    }
+
+    ul {
+      list-style-type: none;
+    }
+
+    ul li {
+      padding: 5px 0;
+    }
+
+    #downloadPDF {
+      margin-top: 20px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    #downloadPDF:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Numerolojiye Göre Meslek Hesaplama</h1>
+    <form id="numerologyForm">
+      <label for="firstName">İsim:</label>
+      <input type="text" id="firstName" name="firstName" required>
+
+      <label for="lastName">Soyisim:</label>
+      <input type="text" id="lastName" name="lastName" required>
+
+      <label for="maidenName">Kızlık Soyadı (isteğe bağlı):</label>
+      <input type="text" id="maidenName" name="maidenName">
+
+      <button type="submit">Hesapla</button>
+    </form>
+
+    <div id="result" style="display:none;">
+      <h2>Uygun Meslekler</h2>
+      <ul id="professionList"></ul>
+      <button id="downloadPDF">PDF Olarak İndir</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script>
+    document.getElementById('numerologyForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const maidenName = document.getElementById('maidenName').value;
+
+      // JSON verisini burada kullanacağız
+      fetch('uygun_meslekler.json')  // JSON dosyasını server'dan çekiyoruz
+        .then(response => response.json())
+        .then(data => {
+          const totalSum = calculateNumerology(firstName + lastName + maidenName);
+          
+          // JSON verisiyle meslekleri çekiyoruz
+          const professionsData = data;
+          const professionList = professionsData[totalSum] || [];
+          displayResults(professionList);
+        })
+        .catch(error => console.error('JSON dosyası yüklenemedi:', error));
+    });
+
+    function calculateNumerology(name) {
+      // Basit numeroloji hesaplama
+      const alphabet = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, I: 9, J: 1, K: 2, L: 3, M: 4, N: 5, O: 6, P: 7, Q: 8, R: 9, S: 1, T: 2, U: 3, V: 4, W: 5, X: 6, Y: 7, Z: 8 };
+      let sum = 0;
+
+      // Her harfin karşılık geldiği sayıyı topla
+      for (let i = 0; i < name.length; i++) {
+        const letter = name[i].toUpperCase();
+        if (alphabet[letter]) {
+          sum += alphabet[letter];
+        }
+      }
+
+      // Toplamı 9'a kadar sadeleştir
+      while (sum > 9) {
+        sum = sum.toString().split('').reduce((acc, curr) => acc + parseInt(curr), 0);
+      }
+
+      return sum;
+    }
+
+    function displayResults(professions) {
+      const resultDiv = document.getElementById('result');
+      const professionList = document.getElementById('professionList');
+      professionList.innerHTML = '';
+
+      professions.forEach(profession => {
+        const listItem = document.createElement('li');
+        listItem.textContent = profession;
+        professionList.appendChild(listItem);
+      });
+
+      resultDiv.style.display = 'block';
+    }
+
+    // PDF İndirme
+    document.getElementById('downloadPDF').addEventListener('click', function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.text("Numerolojiye Göre Meslekler", 20, 20);
+      let yPosition = 30;
+      const professionList = document.querySelectorAll('#professionList li');
+
+      professionList.forEach(item => {
+        doc.text(item.textContent, 20, yPosition);
+        yPosition += 10;
+      });
+
+      doc.save('meslekler.pdf');
+    });
+  </script>
+</body>
+</html>
