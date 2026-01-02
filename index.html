@@ -105,6 +105,89 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <script>
+    /***********************
+     * 0) METİN TEMİZLEME (EKRAN + PDF)
+     ***********************/
+    function fixSpacedLetters(str) {
+      str = (str || "").trim();
+      const tokens = str.split(/\s+/);
+      if (tokens.length >= 8) {
+        const singleCharCount = tokens.filter(t => t.length === 1).length;
+        if (singleCharCount / tokens.length > 0.7) {
+          return tokens.join("");
+        }
+      }
+      return str;
+    }
+
+    function cleanTitleText(str) {
+      return fixSpacedLetters( 
+        (str || "")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/\s+/g, " ")
+        .trim() 
+      );
+    }
+
+    function trToAscii(str) {
+      if (!str) return "";
+      const map = {
+        "ç":"c", "Ç":"C", "ğ":"g", "Ğ":"G", "ş":"s", "Ş":"S", 
+        "ö":"o", "Ö":"O", "ü":"u", "Ü":"U", "ı":"i", "İ":"I"
+      };
+      return str.replace(/[çÇğĞşŞöÖüÜıİ]/g, ch => map[ch] || ch);
+    }
+
+    function cleanPdfText(str) {
+      return trToAscii(str || "")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/[–—−]/g, "-")
+        .replace(/→/g, "->")
+        .replace(/[“”]/g, '"')
+        .replace(/[’‘]/g, "'")
+        .replace(/\r/g, "");
+    }
+
+    /***********************
+     * 1) HARF - SAYI MAP
+     ***********************/
+    const numberMap = {
+      A:1, B:2, C:3, Ç:3, D:4, E:5, F:6, G:7, Ğ:7, H:8, I:9, İ:9, J:1,
+      K:2, L:3, M:4, N:5, O:6, Ö:6, P:7, R:9, S:1, Ş:1, T:2, U:3, Ü:3,
+      V:4, Y:7, Z:8, W:5, Q:8, X:6 
+    };
+
+    const vowels = "AEIİOÖUÜ";
+
+    const rows = [
+      { row: 1, letters: "AJSŞ" },
+      { row: 2, letters: "BKT" },
+      { row: 3, letters: "CÇLUÜ" },
+      { row: 4, letters: "DMV" },
+      { row: 5, letters: "ENW" },
+      { row: 6, letters: "FOÖX" },
+      { row: 7, letters: "GĞPY" },
+      { row: 8, letters: "HQZ" },
+      { row: 9, letters: "İIR" }
+    ];
+
+    /***********************
+     * 2) MASTER SAYILAR
+     ***********************/
+    const masterNumbers = new Set([11, 19, 22, 33]);
+
+    function sadeleştir(num) {
+      if (masterNumbers.has(num)) return num;
+      while (num > 9) {
+        num = num.toString().split("").reduce((a, b) => a + Number(b), 0);
+        if (masterNumbers.has(num)) return num;
+      }
+      return num;
+    }
+
+    /***********************
+     * 3) NUMEROLOJİK HESAPLAMA
+     ***********************/
     document.getElementById('numerologyForm').addEventListener('submit', function(event) {
       event.preventDefault();
       
