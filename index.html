@@ -50,6 +50,7 @@
 
     #result {
       margin-top: 20px;
+      display: none;
     }
 
     ul {
@@ -91,9 +92,9 @@
       <button type="submit">Hesapla</button>
     </form>
 
-    <div id="result" style="display:none;">
-      <h2>Uygun Meslekler</h2>
-      <ul id="professionList"></ul>
+    <div id="result">
+      <h2>Numerolojik Meslek Sayısı:</h2>
+      <p id="professionNumber"></p>
       <button id="downloadPDF">PDF Olarak İndir</button>
     </div>
   </div>
@@ -107,16 +108,26 @@
       const lastName = document.getElementById('lastName').value;
       const maidenName = document.getElementById('maidenName').value;
 
-      // JSON verisini burada kullanacağız
-      fetch('uygun_meslekler.json')  // JSON dosyasını server'dan çekiyoruz
+      // JSON dosyasını sunucudan çekiyoruz
+      fetch('uygun_meslekler.json') // JSON dosyanızın yolu burada
         .then(response => response.json())
         .then(data => {
           const totalSum = calculateNumerology(firstName + lastName + maidenName);
-          
-          // JSON verisiyle meslekleri çekiyoruz
-          const professionsData = data;
-          const professionList = professionsData[totalSum] || [];
-          displayResults(professionList);
+
+          // Meslek sayısını ekranda göstereceğiz
+          document.getElementById('professionNumber').textContent = totalSum;
+
+          // PDF İndirme Butonunu Görünür Hale Getir
+          document.getElementById('result').style.display = 'block';
+
+          // PDF indirme fonksiyonu
+          document.getElementById('downloadPDF').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.text("Numerolojik Meslek Sayısı: " + totalSum, 20, 20);
+            doc.save('meslek_sayisi.pdf');
+          });
         })
         .catch(error => console.error('JSON dosyası yüklenemedi:', error));
     });
@@ -141,37 +152,6 @@
 
       return sum;
     }
-
-    function displayResults(professions) {
-      const resultDiv = document.getElementById('result');
-      const professionList = document.getElementById('professionList');
-      professionList.innerHTML = '';
-
-      professions.forEach(profession => {
-        const listItem = document.createElement('li');
-        listItem.textContent = profession;
-        professionList.appendChild(listItem);
-      });
-
-      resultDiv.style.display = 'block';
-    }
-
-    // PDF İndirme
-    document.getElementById('downloadPDF').addEventListener('click', function() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      doc.text("Numerolojiye Göre Meslekler", 20, 20);
-      let yPosition = 30;
-      const professionList = document.querySelectorAll('#professionList li');
-
-      professionList.forEach(item => {
-        doc.text(item.textContent, 20, yPosition);
-        yPosition += 10;
-      });
-
-      doc.save('meslekler.pdf');
-    });
   </script>
 </body>
 </html>
