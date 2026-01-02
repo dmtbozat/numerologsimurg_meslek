@@ -7,73 +7,103 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f5f5f5;
       margin: 0;
       padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
     .container {
-      width: 50%;
-      margin: 50px auto;
+      width: 80%;
+      max-width: 800px;
       background-color: white;
-      padding: 20px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
     }
 
     h1 {
       text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #333;
     }
 
     label {
       display: block;
-      margin: 10px 0 5px;
+      margin: 8px 0;
+      font-weight: bold;
     }
 
     input {
       width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
     }
 
     button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
       width: 100%;
+      padding: 12px;
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
     }
 
     button:hover {
-      background-color: #45a049;
+      background-color: #1565c0;
     }
 
     #result {
-      margin-top: 20px;
+      margin-top: 30px;
       display: none;
+      background-color: #f0f4ff;
+      padding: 20px;
+      border-radius: 8px;
     }
 
-    ul {
-      list-style-type: none;
+    .result-title {
+      font-size: 18px;
+      font-weight: bold;
     }
 
-    ul li {
-      padding: 5px 0;
+    .result-text {
+      font-size: 16px;
+      margin-top: 10px;
     }
 
     #downloadPDF {
-      margin-top: 20px;
-      background-color: #007BFF;
+      background-color: #4caf50;
       color: white;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-      width: 100%;
+      margin-top: 20px;
     }
 
     #downloadPDF:hover {
-      background-color: #0056b3;
+      background-color: #388e3c;
     }
+
+    .statusLine {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .statusOk {
+      color: #2e7d32;
+    }
+
+    .statusBad {
+      color: #c62828;
+    }
+
   </style>
 </head>
 <body>
@@ -93,20 +123,27 @@
     </form>
 
     <div id="result">
-      <h2>Numerolojik Meslek Sayısı:</h2>
-      <p id="professionNumber"></p>
-      <h3>Meslekler:</h3>
+      <div class="result-title">Numerolojik Meslek Sayısı:</div>
+      <div class="result-text" id="professionNumber"></div>
+
+      <div class="result-title">Meslekler:</div>
       <ul id="professionList"></ul>
-      <h3>Açıklama:</h3>
-      <p id="explanationText"></p>
+
+      <div class="result-title">Açıklama:</div>
+      <div class="result-text" id="explanationText"></div>
+
       <button id="downloadPDF">PDF Olarak İndir</button>
+    </div>
+
+    <div class="statusLine" id="jsonStatus">
+      JSON durumu: <span class="statusBad">yükleniyor...</span>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     /***********************
-     * 0) METİN TEMİZLEME (EKRAN + PDF)
+     * METİN TEMİZLEME
      ***********************/
     function fixSpacedLetters(str) {
       str = (str || "").trim();
@@ -118,15 +155,6 @@
         }
       }
       return str;
-    }
-
-    function cleanTitleText(str) {
-      return fixSpacedLetters( 
-        (str || "")
-        .replace(/[\u200B-\u200D\uFEFF]/g, "")
-        .replace(/\s+/g, " ")
-        .trim() 
-      );
     }
 
     function trToAscii(str) {
@@ -149,7 +177,7 @@
     }
 
     /***********************
-     * 1) HARF - SAYI MAP
+     * HARF - SAYI MAP
      ***********************/
     const numberMap = {
       A:1, B:2, C:3, Ç:3, D:4, E:5, F:6, G:7, Ğ:7, H:8, I:9, İ:9, J:1,
@@ -159,34 +187,8 @@
 
     const vowels = "AEIİOÖUÜ";
 
-    const rows = [
-      { row: 1, letters: "AJSŞ" },
-      { row: 2, letters: "BKT" },
-      { row: 3, letters: "CÇLUÜ" },
-      { row: 4, letters: "DMV" },
-      { row: 5, letters: "ENW" },
-      { row: 6, letters: "FOÖX" },
-      { row: 7, letters: "GĞPY" },
-      { row: 8, letters: "HQZ" },
-      { row: 9, letters: "İIR" }
-    ];
-
     /***********************
-     * 2) MASTER SAYILAR
-     ***********************/
-    const masterNumbers = new Set([11, 19, 22, 33]);
-
-    function sadeleştir(num) {
-      if (masterNumbers.has(num)) return num;
-      while (num > 9) {
-        num = num.toString().split("").reduce((a, b) => a + Number(b), 0);
-        if (masterNumbers.has(num)) return num;
-      }
-      return num;
-    }
-
-    /***********************
-     * 3) NUMEROLOJİK HESAPLAMA
+     * NUMEROLOJİK HESAPLAMA
      ***********************/
     document.getElementById('numerologyForm').addEventListener('submit', function(event) {
       event.preventDefault();
@@ -195,13 +197,12 @@
       const lastName = document.getElementById('lastName').value;
       const maidenName = document.getElementById('maidenName').value;
 
-      // JSON dosyasını sunucudan çekiyoruz
       fetch('uygun_meslekler.json') // JSON dosyanızın yolu burada
         .then(response => response.json())
         .then(data => {
           const totalSum = calculateNumerology(firstName + lastName + maidenName);
 
-          // Meslek ve açıklamalar
+          // Meslekler ve açıklama
           const professionList = data[totalSum] ? data[totalSum].meslekler : [];
           const explanation = data[totalSum] ? data[totalSum].aciklama : '';
 
@@ -227,10 +228,10 @@
           document.getElementById('downloadPDF').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFont("helvetica");  // Türkçe karakterler için uyumlu font
+            doc.setFont("helvetica");
 
             // Başlık
-            doc.text("Numerolojiye Göre Demet Bozat İçin Uygun Meslekler", 20, 20);
+            doc.text("Numerolojiye Göre Meslek Hesaplama", 20, 20);
             doc.text("Meslek Sayısı: " + totalSum, 20, 30);
 
             let yPosition = 40;
@@ -254,20 +255,17 @@
     });
 
     function calculateNumerology(name) {
-      // Türkçe harfleri İngilizce'ye çevirme
       const turkishToEnglish = {
         'ç': 'c', 'ı': 'i', 'ğ': 'g', 'ş': 's', 'ö': 'o', 'ü': 'u',
         'Ç': 'C', 'İ': 'I', 'Ğ': 'G', 'Ş': 'S', 'Ö': 'O', 'Ü': 'U',
-        'ı': 'i' // 'ı' harfini 'i' olarak dönüştür
+        'ı': 'i'
       };
 
-      // Türkçe karakterleri İngilizce'ye dönüştür
       name = name.replace(/[çığşöüÇİĞŞÖÜı]/g, match => turkishToEnglish[match]);
 
       const alphabet = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, I: 9, J: 1, K: 2, L: 3, M: 4, N: 5, O: 6, P: 7, Q: 8, R: 9, S: 1, T: 2, U: 3, V: 4, W: 5, X: 6, Y: 7, Z: 8 };
       let sum = 0;
 
-      // Her harfin karşılık geldiği sayıyı topla
       for (let i = 0; i < name.length; i++) {
         const letter = name[i].toUpperCase();
         if (alphabet[letter]) {
@@ -275,7 +273,6 @@
         }
       }
 
-      // Toplamı 9'a kadar sadeleştir
       while (sum > 9) {
         sum = sum.toString().split('').reduce((acc, curr) => acc + parseInt(curr), 0);
       }
